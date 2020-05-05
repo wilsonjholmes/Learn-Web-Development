@@ -154,7 +154,59 @@ def logout():
 @app.route('/dashboard')
 @is_logged_in
 def dashboard():
+
+    # # Sets up the connection to the database
+    #     sqlite_file = 'myflaskapp.db'
+    #     conn = sqlite3.connect(sqlite_file)
+
+    #     # Create Cursor
+    #     cur = conn.cursor()
+
+    #     # Execute query/ save post      # Maybe sometime I can change this to save your real name and your username
+    #     cur.execute("INSERT INTO articles(title, body, author) VALUES(?, ?, ?)", (title, body, session['username'],))
+
+    #     # Commit changes
+    #     conn.commit()
+
+    #     # Close connection
+    #     conn.close()
     return render_template('dashboard.html')
+
+# WTForms class to handle the dashboard page's article forms logic
+class ArticleForm(Form):
+    title = StringField('Title', [validators.Length(min=1, max=200)])
+    body = TextAreaField()
+
+# Add Article
+@app.route('/add_article', methods=['GET', 'POST'])
+@is_logged_in
+def add_article():
+    form = ArticleForm(request.form)
+    if (request.method == 'POST' and form.validate()):
+        title = form.title.data
+        body = form.body.data
+
+        # Sets up the connection to the database
+        sqlite_file = 'myflaskapp.db'
+        conn = sqlite3.connect(sqlite_file)
+
+        # Create Cursor
+        cur = conn.cursor()
+
+        # Execute query/ save post      # Maybe sometime I can change this to save your real name and your username
+        cur.execute("INSERT INTO articles(title, body, author) VALUES(?, ?, ?)", (title, body, session['username'],))
+
+        # Commit changes
+        conn.commit()
+
+        # Close connection
+        conn.close()
+
+        flash('Article created', 'success')
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('add_article.html', form=form)
 
 
 if __name__ == '__main__':
